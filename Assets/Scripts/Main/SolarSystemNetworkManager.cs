@@ -5,6 +5,7 @@ using TMPro;
 using UI;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.Networking.NetworkSystem;
 using UnityEngine.UI;
 
 namespace Main
@@ -66,9 +67,10 @@ namespace Main
         public override void OnStartServer()
         {
             base.OnStartServer();
-            
-            SpawnPrefabs();
-
+            //if (NetworkServer.active)
+            //{
+                SpawnPrefabs();
+            //}
             NetworkServer.RegisterHandler(100, RecievName);
         }
 
@@ -85,33 +87,18 @@ namespace Main
             }
         }
 
-        public class MessageLogin : MessageBase
-        {
-            public string login;
-
-            public override void Deserialize(NetworkReader reader)
-            {
-                login = reader.ReadString();
-            }
-
-            public override void Serialize(NetworkWriter writer)
-            {
-                writer.Write(login);
-            }
-        }
-
         public override void OnClientConnect(NetworkConnection conn)
         {
             base.OnClientConnect(conn);
-            MessageLogin login = new MessageLogin();
-            login.login = _playerName;
+            StringMessage login = new StringMessage(_playerName);
             conn.Send(100, login);
         }
 
         public void RecievName(NetworkMessage networkMessage)
         {
-            _players[networkMessage.conn.connectionId].PlayerName = networkMessage.reader.ToString();
+            _players[networkMessage.conn.connectionId].PlayerName = networkMessage.reader.ReadString();
             _players[networkMessage.conn.connectionId].gameObject.name = _players[networkMessage.conn.connectionId].PlayerName;
+            _playerPanels[_index - 1].name = _players[networkMessage.conn.connectionId].PlayerName;
             Debug.Log(_players[networkMessage.conn.connectionId]);
             
         }

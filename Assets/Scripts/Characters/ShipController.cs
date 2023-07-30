@@ -35,7 +35,7 @@ namespace Characters
         private float _shipSpeed;
         private Rigidbody _rb;
         
-        [SerializeField] private string _playerName;
+        [SerializeField, SyncVar] private string _playerName;
         [SerializeField, SyncVar] private int _points;
 
         public Action PointsChanged;
@@ -58,7 +58,8 @@ namespace Characters
                 return;
             }
             
-            gameObject.name = _playerName;
+            gameObject.name = PlayerName;
+            _serverPosition = transform.position;
             _cameraOrbit = FindObjectOfType<CameraOrbit>();
             _cameraOrbit.Initiate(_cameraAttach == null ? transform : _cameraAttach);
             _playerLabel = GetComponentInChildren<PlayerLabel>();
@@ -96,7 +97,7 @@ namespace Characters
             }
         }
 
-        protected override void FromServerUpdate() { }
+        protected override void FromServerUpdate() { transform.position = _serverPosition; }
         protected override void SendToServer() { }
 
         [ClientCallback]
